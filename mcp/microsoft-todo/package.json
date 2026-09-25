@@ -1,0 +1,17 @@
+{
+  "name": "microsoft-todo-mcp",
+  "version": "0.1.0",
+  "description": "MCP server that connects Claude Code to Microsoft To Do (personal Microsoft accounts) via Microsoft Graph",
+  "type": "module",
+  "main": "server.js",
+  "bin": { "microsoft-todo-mcp": "server.js" },
+  "scripts": {
+    "login": "node server.js login",
+    "start": "node server.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.1",
+    "zod": "^3.25.0"
+  }
+}
