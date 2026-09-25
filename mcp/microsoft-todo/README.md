@@ -17,43 +17,37 @@ Microsoft Graph の To Do API を使う。
 日時は既定で東京時間（`Tokyo Standard Time`）。
 
 ## セットアップ（初回のみ）
+Azure のアプリ登録は不要（Microsoft 公開の「Microsoft Graph Command Line Tools」クライアントでサインインする）。
 
-### 1. Azure にアプリを登録（Client ID を取得）
-1. https://entra.microsoft.com → **アプリの登録** → **新規登録**
-2. 名前: `Claude ToDo`
-3. サポートされるアカウントの種類: **個人用 Microsoft アカウントのみ**
-4. 登録後、**認証** → 「パブリック クライアント フローを許可する」を **はい** → 保存
-5. **API のアクセス許可** → Microsoft Graph → 委任 → `Tasks.ReadWrite` を追加
-6. **概要** の「アプリケーション (クライアント) ID」をコピー
-
-### 2. インストールとサインイン（PowerShell）
+### 1. インストールとサインイン（PowerShell）
 ```powershell
 cd $HOME
 git clone https://github.com/DiceKakumei/AiWorkSpace-.git
 cd $HOME\AiWorkSpace-\mcp\microsoft-todo
 npm install
-$env:MS_TODO_CLIENT_ID = "<コピーしたクライアントID>"
 node server.js login
 ```
-表示された URL とコードでブラウザからサインインする（Microsoft アカウント）。
+表示された URL とコードでブラウザからサインインし、To Do へのアクセスを許可する。
 トークンは `~\.microsoft-todo-mcp\token.json` に保存され、以後は自動更新。
 
-### 3. Claude Code に登録（全プロジェクト共通）
+### 2. Claude Code に登録（全プロジェクト共通）
 ```powershell
 cd $HOME\AiWorkSpace-\mcp\microsoft-todo
-claude mcp add microsoft-todo --scope user -e MS_TODO_CLIENT_ID=<コピーしたクライアントID> -- node "$HOME\AiWorkSpace-\mcp\microsoft-todo\server.js"
+claude mcp add microsoft-todo --scope user -- node "$HOME\AiWorkSpace-\mcp\microsoft-todo\server.js"
 ```
 Claude Code を再起動し `/mcp` で `microsoft-todo` が connected なら完了。
+
+### （任意）自前の Azure アプリを使う場合
+Azure テナントがある場合のみ。アプリ登録（個人用 Microsoft アカウント対応、パブリック クライアント フロー許可、委任 `Tasks.ReadWrite`）後、`MS_TODO_CLIENT_ID` にクライアント ID を設定する。
 
 ## 環境変数
 | 変数 | 既定値 | 説明 |
 |---|---|---|
-| `MS_TODO_CLIENT_ID` | （必須） | Azure アプリのクライアント ID |
+| `MS_TODO_CLIENT_ID` | Graph Command Line Tools | 自前 Azure アプリのクライアント ID（任意） |
 | `MS_TODO_TENANT` | `consumers` | 職場アカウントなら `organizations` |
 | `MS_TODO_TIMEZONE` | `Tokyo Standard Time` | 日時のタイムゾーン |
 | `MS_TODO_TOKEN_FILE` | `~/.microsoft-todo-mcp/token.json` | トークン保存先 |
 
 ## トラブル
 - `Not signed in` / `Token refresh failed` → `node server.js login` をやり直す
-- `AADSTS700016` → クライアント ID の誤り、またはアカウント種類が「個人用」になっていない
-- `AADSTS7000218` → 手順1-4（パブリック クライアント フロー）が未設定
+- `AADSTS50020`（Azure ポータルに入れない）→ 個人アカウントは Azure テナント未所属のため。本手順ではポータル不要

@@ -9,7 +9,9 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-const CLIENT_ID = process.env.MS_TODO_CLIENT_ID;
+// Default: Microsoft's public "Microsoft Graph Command Line Tools" client, which
+// accepts personal Microsoft accounts, so no Azure app registration is needed.
+const CLIENT_ID = process.env.MS_TODO_CLIENT_ID || "14d82eec-204b-4c2f-b7e8-296a70dab67e";
 const TENANT = process.env.MS_TODO_TENANT || "consumers";
 const TIME_ZONE = process.env.MS_TODO_TIMEZONE || "Tokyo Standard Time";
 const TOKEN_FILE =
@@ -17,12 +19,6 @@ const TOKEN_FILE =
 const SCOPES = "Tasks.ReadWrite User.Read offline_access";
 const AUTH_BASE = `https://login.microsoftonline.com/${TENANT}/oauth2/v2.0`;
 const GRAPH = "https://graph.microsoft.com/v1.0";
-
-function requireClientId() {
-  if (!CLIENT_ID) {
-    throw new Error("MS_TODO_CLIENT_ID is not set. See mcp/microsoft-todo/README.md.");
-  }
-}
 
 function saveToken(tok) {
   fs.mkdirSync(path.dirname(TOKEN_FILE), { recursive: true });
@@ -45,7 +41,6 @@ async function postForm(url, params) {
 }
 
 async function login() {
-  requireClientId();
   const dc = await postForm(`${AUTH_BASE}/devicecode`, { client_id: CLIENT_ID, scope: SCOPES });
   if (!dc.ok) throw new Error(`Device code request failed: ${JSON.stringify(dc.body)}`);
   console.log(dc.body.message);
@@ -73,7 +68,6 @@ async function login() {
 }
 
 async function accessToken() {
-  requireClientId();
   if (!fs.existsSync(TOKEN_FILE)) {
     throw new Error("Not signed in. Run `node server.js login` in mcp/microsoft-todo first.");
   }
