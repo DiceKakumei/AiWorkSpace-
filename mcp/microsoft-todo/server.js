@@ -146,18 +146,25 @@ function buildServer() {
   server.registerTool(
     "list_tasks",
     {
-      description: "List tasks in a list. By default only incomplete tasks.",
+      description: "List tasks in a list. By default only incomplete tasks. Follows paging up to `limit` (default 500).",
       inputSchema: {
         listId: z.string(),
         includeCompleted: z.boolean().optional(),
-        top: z.number().int().min(1).max(200).optional(),
+        limit: z.number().int().min(1).max(2000).optional(),
       },
     },
-    async ({ listId, includeCompleted, top }) => {
-      const q = new URLSearchParams({ $top: String(top || 100) });
+    async ({ listId, includeCompleted, limit }) => {
+      const max = limit || 500;
+      const q = new URLSearchParams({ $top: String(Math.min(max, 100)) });
       if (!includeCompleted) q.set("$filter", "status ne 'completed'");
-      const r = await graph("GET", `/me/todo/lists/${listId}/tasks?${q}`);
-      return text(r.value.map(slimTask));
+      const tasks = [];
+      let next = `/me/todo/lists/${listId}/tasks?${q}`;
+      while (next && tasks.length < max) {
+        const r = await graph("GET", next);
+        tasks.push(...r.value);
+        next = r["@odata.nextLink"];
+      }
+      return text(tasks.slice(0, max).map(slimTask));
     }
   );
 
