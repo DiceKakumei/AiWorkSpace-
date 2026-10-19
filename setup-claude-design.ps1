@@ -1,4 +1,4 @@
-# Claude Code デザイン強化セットアップ(リール紹介の5点)
+﻿# Claude Code デザイン強化セットアップ(リール紹介の5点)
 # 実行: powershell -ExecutionPolicy Bypass -File .\setup-claude-design.ps1
 param([string]$TwentyFirstApiKey = $env:TWENTYFIRST_API_KEY)
 
