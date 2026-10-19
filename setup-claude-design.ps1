@@ -16,10 +16,7 @@ foreach ($c in "node","npm","git","claude") {
 # 1. Taste Skill
 Step "1. Taste Skill"
 $skills = Join-Path $HOME ".claude\skills"
-New-Item -ItemType Directory -Force -Path $skills | Out-Null
-$taste = Join-Path $skills "taste-skill"
-if (-not (Test-Path $taste)) { git clone https://github.com/Leonxlnx/taste-skill $taste }
-else { git -C $taste pull }
+npx -y skills add https://github.com/Leonxlnx/taste-skill --skill "design-taste-frontend" -g -y
 
 # 2. Web Design Guidelines (Vercel)
 Step "2. Web Design Guidelines"
